@@ -55,9 +55,9 @@ void game_loop()
     snk.len = STARTING_LENGTH;
     x       = rand() % (COLS - COLS / 5) + COLS / 10;
     y       = rand() % (LINES - LINES / 5) + LINES / 10;
-    for (int i = MAX_SIZE; i > MAX_SIZE - snk.len; i--) {
-        snk.pos[i].x = -1;
-        snk.pos[i].y = -1;
+    for (int i = 0; i < MAX_SIZE; i++) {
+        snk.pos[i].x = 1;
+        snk.pos[i].y = 1;
     }
     for (int i = 0; i < snk.len; i++) {
         snk.pos[i].x = ++x;
