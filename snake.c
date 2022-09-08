@@ -97,7 +97,7 @@ void game_loop()
             break;
         case 'r':
             if (!over)
-                //break;
+                break;
             clear();
             box(stdscr, ACS_VLINE, ACS_HLINE);
             snk.len = STARTING_LENGTH;
