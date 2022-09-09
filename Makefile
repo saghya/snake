@@ -4,8 +4,9 @@
 
 .PHONY = all clean
 
-CC = gcc                        # compiler to use
-CFLAGS = -lncurses -g -Wall -Wextra
+CC = gcc
+CFLAGS = -g -Wall -Wextra
+LDFLAGS = -lncurses
 
 SRCS := $(wildcard *.c)
 BINS := $(SRCS:%.c=%)
@@ -13,7 +14,7 @@ BINS := $(SRCS:%.c=%)
 all: ${BINS}
 
 %: %.o
-	${CC} ${CFLAGS} $< -o $@
+	${CC} ${CFLAGS} ${LDFLAGS} $< -o $@
 
 %.o: %.c
 	${CC} -c $<
