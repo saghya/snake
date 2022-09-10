@@ -1,18 +1,18 @@
 /*
-TODO:- fix random die
-     - splash screen
-*/
+ * TODO: - fix random die
+ *       - splash screen
+ */
 
 #include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-#define MIN_LINES     7
-#define MIN_COLS      15
-#define STARTING_SIZE 5
-#define MAX_SIZE      1024
-#define TIMEOUT       250
+#define MIN_LINES    7
+#define MIN_COLS     15
+#define STARTING_LEN 5
+#define MAX_LEN      1024
+#define TIMEOUT      250
 
 enum direction { up, down, left, right };
 
@@ -21,7 +21,7 @@ typedef struct _position {
 } position;
 
 typedef struct _snake {
-    position pos[MAX_SIZE];
+    position pos[MAX_LEN];
     int      dir;
     int      len;
     int      color;
@@ -61,16 +61,16 @@ void init()
     colors = has_colors();
     if (colors) {
         start_color();
-        init_pair(1, COLOR_GREEN, COLOR_BLACK);
-        init_pair(2, COLOR_BLUE, COLOR_BLACK);
-        init_pair(3, COLOR_RED, COLOR_BLACK);
-        init_pair(4, COLOR_MAGENTA, COLOR_BLACK);
-        init_pair(5, COLOR_WHITE, COLOR_BLACK);
-        init_pair(6, COLOR_YELLOW, COLOR_BLACK);
-        init_pair(7, COLOR_CYAN, COLOR_BLACK);
-        init_pair(8, COLOR_RED, COLOR_BLACK);
+        init_pair(COLOR_GREEN, COLOR_GREEN, COLOR_BLACK);
+        init_pair(COLOR_BLUE, COLOR_BLUE, COLOR_BLACK);
+        init_pair(COLOR_RED, COLOR_RED, COLOR_BLACK);
+        init_pair(COLOR_MAGENTA, COLOR_MAGENTA, COLOR_BLACK);
+        init_pair(COLOR_WHITE, COLOR_WHITE, COLOR_BLACK);
+        init_pair(COLOR_YELLOW, COLOR_YELLOW, COLOR_BLACK);
+        init_pair(COLOR_CYAN, COLOR_CYAN, COLOR_BLACK);
+        init_pair(COLOR_RED, COLOR_RED, COLOR_BLACK);
     }
-    snk.color = 1;
+    snk.color = COLOR_GREEN;
 }
 
 void print_snake()
@@ -123,12 +123,16 @@ void print_food()
 void print_lose()
 {
     if (colors)
-        attron(COLOR_PAIR(3) | A_BOLD);
+        attron(COLOR_PAIR(COLOR_RED) | A_BOLD);
     mvprintw(LINES / 2 - 2, (COLS - strlen(game_over)) / 2, game_over);
     if (colors)
-        attroff(COLOR_PAIR(3) | A_BOLD);
-    mvprintw(LINES / 2 - 1, (COLS - 10) / 2, "score: %2d",
-             snk.len - STARTING_SIZE);
+        attroff(COLOR_PAIR(COLOR_RED) | A_BOLD);
+    mvprintw(LINES / 2 - 1, (COLS - 10) / 2, "score: ");
+    if (colors)
+        attron(COLOR_PAIR(COLOR_BLUE));
+    printw("%2d", snk.len - STARTING_LEN);
+    if (colors)
+        attroff(COLOR_PAIR(COLOR_BLUE));
     mvprintw(LINES / 2 + 1, (COLS - strlen(restart)) / 2, restart);
 }
 
@@ -138,24 +142,24 @@ void print_win()
         attron(COLOR_PAIR(1) | A_BOLD);
     mvprintw(LINES / 2 - 2, (COLS - strlen(win)) / 2, win);
     if (colors)
-        attroff(COLOR_PAIR(1) | A_BOLD);
+        attroff(COLOR_PAIR(COLOR_GREEN) | A_BOLD);
     mvprintw(LINES / 2 - 1, (COLS - 10) / 2, "score: %2d",
-             snk.len - STARTING_SIZE);
+             snk.len - STARTING_LEN);
     mvprintw(LINES / 2 + 1, (COLS - strlen(restart)) / 2, restart);
 }
 
 void set_food_char()
 {
-    fd.ch    = rand() % (126 - 32) + 33; // random printable ascii char
+    fd.ch = rand() % (126 - 32) + 33; // random printable ascii char
     if (colors)
-        fd.color = rand() % 8 + 1;
+        fd.color = rand() % 6 + 1;
 }
 
 void setup()
 {
     int x, y;
-    snk.len = STARTING_SIZE;
-    for (int i = snk.len; i < MAX_SIZE; i++)
+    snk.len = STARTING_LEN;
+    for (int i = snk.len; i < MAX_LEN; i++)
         snk.pos[i].x = snk.pos[i].y = -1;
     x = COLS / 2 - COLS / 6;
     y = LINES / 2;
@@ -181,7 +185,6 @@ void game_loop()
             mvprintw(0, 0, "Please resize your window and press r");
             over = 1;
             continue;
-            ;
         }
         if (LINES != s_lines || COLS != s_cols) {
             s_lines = LINES;
@@ -206,7 +209,11 @@ void game_loop()
             } else {
                 pause = 1;
                 timeout(-1);
+                if (colors)
+                    attron(COLOR_PAIR(COLOR_BLUE));
                 mvprintw(LINES / 2 - 1, (COLS - strlen(paused)) / 2, paused);
+                if (colors)
+                    attroff(COLOR_PAIR(COLOR_BLUE));
             }
             break;
         case 'w':
@@ -299,7 +306,7 @@ void game_loop()
         }
 
         // WIN
-        if (snk.len == MAX_SIZE || snk.len == (LINES - 2) * (COLS - 2)) {
+        if (snk.len == MAX_LEN || snk.len == (LINES - 2) * (COLS - 2)) {
             print_win();
             over = 1;
         }
@@ -310,9 +317,9 @@ int main()
 {
     init();
     setup();
+
     game_loop();
 
     endwin();
-
-    return 0;
 }
+
