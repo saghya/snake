@@ -15,7 +15,7 @@ debug: ${SRC}
 	${CC} ${DEBUGFLAGS} ${LDFLAGS} $< -o snake-debug
 
 clean:
-	rm -rvf ${BINS}
+	rm -rf ${BINS}
 
 install: snake
 	mkdir -p ${DESTDIR}${PREFIX}/bin
