@@ -1,24 +1,29 @@
-# Usage:
-# make        # compile all binary
-# make clean  # remove ALL binaries and objects
-
-.PHONY = all clean
-
-CC = gcc
-CFLAGS = -g -Wall -Wextra
+CC = cc
+CFLAGS = -O2 -Wall -Wextra
 LDFLAGS = -lncurses
+DEBUGFLAGS = -g -Og -Wall -Wextra
+PREFIX = /usr/local
+SRC = snake.c
+BINS = snake snake-debug
 
-SRCS := $(wildcard *.c)
-BINS := $(SRCS:%.c=%)
+all: snake
 
-all: ${BINS}
-
-%: %.o
+snake: ${SRC}
 	${CC} ${CFLAGS} ${LDFLAGS} $< -o $@
 
-%.o: %.c
-	${CC} -c $<
+debug: ${SRC}
+	${CC} ${DEBUGFLAGS} ${LDFLAGS} $< -o snake-debug
 
 clean:
-	rm -rvf *.o ${BINS}
+	rm -rvf ${BINS}
+
+install: snake
+	mkdir -p ${DESTDIR}${PREFIX}/bin
+	cp snake ${DESTDIR}${PREFIX}/bin
+	chmod 711 ${DESTDIR}${PREFIX}/bin/snake
+
+uninstall:
+	rm -f ${DESTDIR}${PREFIX}/bin/snake
+
+.PHONY = all clean debug install uninstall
 
