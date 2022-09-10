@@ -16,15 +16,22 @@ TODO:- fix random die
 
 enum direction { up, down, left, right };
 
-typedef struct pos {
+typedef struct _position {
     int x, y;
-} pos;
+} position;
 
-typedef struct snake {
-    pos pos[MAX_SIZE];
-    int dir;
-    int len;
+typedef struct _snake {
+    position pos[MAX_SIZE];
+    int      dir;
+    int      len;
+    int      color;
 } snake;
+
+typedef struct _food {
+    position pos;
+    int      ch;
+    int      color;
+} food;
 
 static const char welcome[]   = "press any key to start";
 static const char game_over[] = "game over";
@@ -32,7 +39,7 @@ static const char restart[]   = "press r to restart";
 static const char win[]       = "you won";
 static const char paused[]    = "paused";
 static snake      snk;
-static pos        food;
+static food       fd;
 static int        colors;
 
 void init()
@@ -63,13 +70,14 @@ void init()
         init_pair(7, COLOR_CYAN, COLOR_BLACK);
         init_pair(8, COLOR_RED, COLOR_BLACK);
     }
+    snk.color = 1;
 }
 
 void print_snake()
 {
     attron(A_BOLD);
     if (colors)
-        attron(COLOR_PAIR(1));
+        attron(COLOR_PAIR(snk.color));
     if (snk.pos[0].x == snk.pos[1].x)
         mvaddch(snk.pos[0].y, snk.pos[0].x, '|');
     else
@@ -90,28 +98,25 @@ void print_snake()
         mvaddch(snk.pos[snk.len - 1].y, snk.pos[snk.len - 1].x, '-');
     attroff(A_BOLD);
     if (colors)
-        attroff(COLOR_PAIR(1));
+        attroff(COLOR_PAIR(snk.color));
 }
 
 void print_food()
 {
-    int color;
     attron(A_BOLD);
     if (colors) {
-        color = rand() % 8 + 1;
-        attron(COLOR_PAIR(color));
+        attron(COLOR_PAIR(fd.color));
     }
     for (int i = 0; i < snk.len; i++) {
-        if (snk.pos[i].x == food.x && snk.pos[i].y == food.y) {
-            food.x = rand() % (COLS - 2) + 1;
-            food.y = rand() % (LINES - 2) + 1;
-            i      = 0;
+        if (snk.pos[i].x == fd.pos.x && snk.pos[i].y == fd.pos.y) {
+            fd.pos.x = rand() % (COLS - 2) + 1;
+            fd.pos.y = rand() % (LINES - 2) + 1;
+            i        = 0;
         }
     }
-    // random printable ascii character
-    mvaddch(food.y, food.x, rand() % (126 - 33) + 33);
+    mvaddch(fd.pos.y, fd.pos.x, fd.ch);
     if (colors)
-        attroff(COLOR_PAIR(color));
+        attroff(COLOR_PAIR(fd.color));
     attroff(A_BOLD);
 }
 
@@ -139,22 +144,30 @@ void print_win()
     mvprintw(LINES / 2 + 1, (COLS - strlen(restart)) / 2, restart);
 }
 
+void set_food_char()
+{
+    fd.ch    = rand() % (126 - 32) + 33; // random printable ascii char
+    if (colors)
+        fd.color = rand() % 8 + 1;
+}
+
 void setup()
 {
     int x, y;
     snk.len = STARTING_SIZE;
     for (int i = snk.len; i < MAX_SIZE; i++)
         snk.pos[i].x = snk.pos[i].y = -1;
-    x       = COLS / 2 - COLS / 5;
-    y       = LINES / 2;
+    x = COLS / 2 - COLS / 6;
+    y = LINES / 2;
     for (int i = 0; i < snk.len; i++) {
         snk.pos[i].x = --x;
         snk.pos[i].y = y;
     }
     snk.dir = right;
     print_snake();
-    food.x = COLS / 2 + COLS / 5;
-    food.y = LINES / 2;
+    fd.pos.x = COLS / 2 + COLS / 6;
+    fd.pos.y = LINES / 2;
+    set_food_char();
     print_food();
 }
 
@@ -167,7 +180,8 @@ void game_loop()
             clear();
             mvprintw(0, 0, "Please resize your window and press r");
             over = 1;
-            continue;;
+            continue;
+            ;
         }
         if (LINES != s_lines || COLS != s_cols) {
             s_lines = LINES;
@@ -225,7 +239,7 @@ void game_loop()
             clear();
             box(stdscr, ACS_VLINE, ACS_HLINE);
             setup();
-            over = 0;
+            over  = 0;
             pause = 0;
             timeout(TIMEOUT);
             break;
@@ -260,10 +274,11 @@ void game_loop()
         print_snake();
 
         // FOOD COLLISION
-        if (snk.pos[0].x == food.x && snk.pos[0].y == food.y) {
+        if (snk.pos[0].x == fd.pos.x && snk.pos[0].y == fd.pos.y) {
             ++snk.len;
-            food.x = rand() % (COLS - 2) + 1;
-            food.y = rand() % (LINES - 2) + 1;
+            fd.pos.x = rand() % (COLS - 2) + 1;
+            fd.pos.y = rand() % (LINES - 2) + 1;
+            set_food_char();
             print_food();
         }
 
