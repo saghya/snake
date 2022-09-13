@@ -127,7 +127,7 @@ void print_lose()
     mvprintw(LINES / 2 - 2, (COLS - strlen(game_over)) / 2, game_over);
     if (colors)
         attroff(COLOR_PAIR(COLOR_RED) | A_BOLD);
-    mvprintw(LINES / 2 - 1, (COLS - 10) / 2, "score: ");
+    mvprintw(LINES / 2 - 1, (COLS - 9) / 2, "score: ");
     if (colors)
         attron(COLOR_PAIR(COLOR_BLUE));
     printw("%2d", snk.len - STARTING_LEN);
@@ -295,13 +295,10 @@ void game_loop()
             print_lose();
             over = 1;
         }
-        for (int i = 0; i < snk.len - 1; i++) {
-            for (int j = i + 1; j < snk.len; j++) {
-                if (snk.pos[i].x == snk.pos[j].x &&
-                    snk.pos[i].y == snk.pos[j].y) {
-                    print_lose();
-                    over = 1;
-                }
+        for (int i = 1; i < snk.len - 1; i++) {
+            if (snk.pos[0].x == snk.pos[i].x && snk.pos[0].y == snk.pos[i].y) {
+                print_lose();
+                over = 1;
             }
         }
 
